@@ -1,13 +1,8 @@
 """
 main.py — CrewAI 双 Agent 自动化运维系统
 
-Agent A (Manager): 由 DeepSeek-V3.2 担任，负责指令拆解、任务规划、逻辑审计
+Agent A (Manager): LLM 驱动，负责指令拆解、任务规划、逻辑审计
 Agent B (Executor): 封装 Claude Code CLI，执行实际代码操作
-
-安全约束：
-- 严禁在 main 分支操作
-- 人工介入点：Manager 生成计划后等待确认
-- 原子化提交
 """
 
 import os

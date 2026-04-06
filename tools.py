@@ -1,8 +1,8 @@
 """
-tools.py — 封装 Claude Code CLI 供 CrewAI Manager 调用
+tools.py — Claude Code CLI 封装工具
 
-Agent B (Executor) 的工具类，通过 subprocess 调用 Claude Code CLI，
-使用 -p 非交互模式执行代码修改、文件操作及 Git 指令。
+通过 subprocess 调用 Claude Code CLI（claude -p），
+以非交互模式执行文件操作和 Git 操作。
 """
 
 import subprocess
