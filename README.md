@@ -1,5 +1,7 @@
 # CrewAI + Claude Code 双 Agent 自动化运维系统
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+
 ## 系统架构
 
 ```
