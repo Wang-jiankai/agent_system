@@ -7,6 +7,7 @@ Agent B (Executor): 封装 Claude Code CLI，执行实际代码操作
 
 import os
 import subprocess
+import uuid
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, LLM
 
@@ -73,23 +74,75 @@ executor = Agent(
 
 
 # ============ 安全检查函数 ============
-def ensure_branch(repo_path: str, branch_name: str = "agent-auto-update") -> str:
-    """确保在独立分支上工作，返回当前分支名"""
-    os.chdir(repo_path)
+def check_working_tree() -> tuple[str, bool]:
+    """检查当前分支和是否有未提交的修改，返回 (分支名, 是否有变更)"""
+    os.chdir(REPO_ROOT)
+
+    # 当前分支
     result = subprocess.run(
         ["git", "rev-parse", "--abbrev-ref", "HEAD"],
         capture_output=True, text=True
     )
     current_branch = result.stdout.strip()
 
-    if current_branch == "main":
-        print(f"\n⚠️  检测到 main 分支，正在切换到 {branch_name}...")
-        subprocess.run(["git", "checkout", "-b", branch_name], check=True)
-        print(f"✅ 已切换到分支: {branch_name}")
-        return branch_name
+    # 是否有未提交的变更
+    status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        capture_output=True, text=True
+    )
+    has_changes = bool(status.stdout.strip())
 
-    print(f"\n✅ 当前分支: {current_branch}，满足安全要求")
-    return current_branch
+    print(f"\n📍 当前分支: {current_branch}")
+    return current_branch, has_changes
+
+
+def prompt_pre_execution() -> str:
+    """执行前让用户选择如何处理已有变更"""
+    print("\n" + "=" * 60)
+    print("⚠️  检测到未提交的变更")
+    print("=" * 60)
+    print("1. stash — 暂存现有修改，agent 在干净状态工作")
+    print("2. 继续 — agent 的修改会与现有变更混在一起")
+    print("3. 退出 — 先手动处理现有修改")
+    print("=" * 60)
+
+    import sys
+    if sys.stdin.isatty():
+        choice = input("\n▶ 选择处理方式 [3]: ").strip()
+    else:
+        print("\n[自动模式] 非交互环境，默认选择 3")
+        choice = "3"
+
+    return choice or "3"
+
+
+def prompt_branch_strategy(current_branch: str) -> tuple[str, str]:
+    """完成后让用户选择分支策略，返回 (操作, 分支名)"""
+    print("\n" + "=" * 60)
+    print("📋 分支策略选择")
+    print("=" * 60)
+    print(f"1. 提交到 {current_branch}")
+    print("2. 创建新分支提交")
+    print("3. 不提交，保留工作进度")
+    print("=" * 60)
+
+    import sys
+    if sys.stdin.isatty():
+        choice = input("\n▶ 选择分支策略 [2]: ").strip()
+    else:
+        print("\n[自动模式] 非交互环境，默认选择 2")
+        choice = "2"
+
+    choice = choice or "2"
+
+    if choice == "2":
+        if sys.stdin.isatty():
+            branch_name = input("▶ 输入分支名: ").strip()
+        else:
+            branch_name = f"agent-{uuid.uuid4().hex[:8]}"
+        return choice, branch_name
+
+    return choice, ""
 
 
 def human_review(plan: str) -> bool:
@@ -113,8 +166,23 @@ def human_review(plan: str) -> bool:
 def run_crew_task(user_instruction: str):
     """运行 CrewAI 任务"""
 
-    # 安全检查：确保不在 main 分支
-    ensure_branch(REPO_ROOT)
+    # 检查当前状态
+    current_branch, has_changes = check_working_tree()
+
+    # 执行前：处理已有变更
+    if has_changes:
+        choice = prompt_pre_execution()
+        if choice == "3":
+            print("❌ 已退出，请先手动处理现有修改")
+            return
+        elif choice == "1":
+            subprocess.run(["git", "stash"], check=True)
+            print("✅ 现有修改已 stash")
+
+    # 创建独立工作分支
+    work_branch = f"agent-{uuid.uuid4().hex[:8]}"
+    subprocess.run(["git", "checkout", "-b", work_branch], check=True)
+    print(f"📦 已切换到工作分支: {work_branch}")
 
     # 任务 1：Manager 规划
     planning_task = Task(
@@ -170,6 +238,26 @@ def run_crew_task(user_instruction: str):
     result = crew_execution.kickoff()
     print("\n✅ 执行结果:")
     print(result)
+
+    # 分支策略
+    choice, new_branch = prompt_branch_strategy(current_branch)
+
+    if choice == "1":
+        print(f"\n📦 提交到 {current_branch}")
+        subprocess.run(["git", "add", "-A"], check=True)
+        subprocess.run(["git", "commit", "-m", "chore: 执行任务"], check=True)
+        print("✅ 已提交")
+        # 切回原分支并删除工作分支
+        subprocess.run(["git", "checkout", current_branch], check=True)
+        subprocess.run(["git", "branch", "-d", work_branch], check=True)
+    elif choice == "2":
+        subprocess.run(["git", "add", "-A"], check=True)
+        subprocess.run(["git", "commit", "-m", "chore: 执行任务"], check=True)
+        print(f"✅ 已在 {work_branch} 提交")
+        print(f"📌 可通过 'git checkout {current_branch} && git merge {work_branch}' 合并")
+    else:
+        print(f"\n⚠️  未提交，修改保留在工作分支 {work_branch}")
+        subprocess.run(["git", "checkout", current_branch], check=True)
 
 
 # ============ 入口 ============
