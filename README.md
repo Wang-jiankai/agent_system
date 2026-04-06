@@ -9,6 +9,8 @@
 
 *A dual-agent system where an LLM-powered Manager orchestrates tasks, and Claude Code executes them.*
 
+[:arrow_right: English Version](./README_en.md)
+
 </div>
 
 ---
@@ -55,8 +57,13 @@ agent_system/
 ├── requirements.txt  # Python 依赖
 ├── tools.py          # Claude Code CLI 封装
 ├── main.py           # CrewAI 主程序
-└── README.md        # 本文件
+├── README.md         # 中文版
+└── README_en.md      # English version
 ```
+
+---
+
+[:arrow_left: 返回英文版](./README_en.md)
 
 ---
 
