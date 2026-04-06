@@ -21,19 +21,16 @@ from tools import ClaudeCodeTool
 # ============ 环境配置 ============
 load_dotenv()
 
-api_key = os.getenv("DEEPSEEK_API_KEY", "")
-base_url = os.getenv("DEEPSEEK_BASE_URL", "https://api.siliconflow.cn/v1")
-model_name = os.getenv("MODEL_NAME", "Pro/deepseek-ai/DeepSeek-V3.2")
+api_key = os.getenv("MINIMAX_API_KEY", "")
+base_url = os.getenv("MINIMAX_BASE_URL", "https://api.minimaxi.com/v1")
+model_name = os.getenv("MODEL_NAME", "openai/MiniMax-M2.7")
 
 if not api_key:
-    raise ValueError("请在 .env 中设置 DEEPSEEK_API_KEY")
+    raise ValueError("请在 .env 中设置 MINIMAX_API_KEY")
 
 # ============ LLM 初始化 ============
-# 使用 openai 提供商 + SiliconFlow 的实际模型名
-# openai/ 前缀告诉 litellm 用 OpenAI 兼容方式调用
-# 模型名用 SiliconFlow 接受的 deepseek-ai/DeepSeek-V3.2
 llm = LLM(
-    model="openai/deepseek-ai/DeepSeek-V3.2",
+    model=model_name,
     api_key=api_key,
     base_url=base_url,
     temperature=0.3,
