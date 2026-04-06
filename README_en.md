@@ -159,6 +159,3 @@ python main.py "Check and update outdated dependencies in requirements.txt"
 | Python-dotenv | Environment variable management |
 | OpenAI-compatible LLM | Manager Agent's brain |
 
----
-
-[:arrow_left: 返回中文版](./README.md)

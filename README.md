@@ -61,9 +61,6 @@ agent_system/
 └── README_en.md      # English version
 ```
 
----
-
-[:arrow_left: 返回英文版](./README_en.md)
 
 ---
 
