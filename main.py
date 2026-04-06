@@ -16,12 +16,12 @@ from tools import ClaudeCodeTool
 # ============ 环境配置 ============
 load_dotenv()
 
-api_key = os.getenv("MINIMAX_API_KEY", "")
-base_url = os.getenv("MINIMAX_BASE_URL", "https://api.minimaxi.com/v1")
-model_name = os.getenv("MODEL_NAME", "openai/MiniMax-M2.7")
+api_key = os.getenv("LLM_API_KEY", "")
+base_url = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
+model_name = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
 
 if not api_key:
-    raise ValueError("请在 .env 中设置 MINIMAX_API_KEY")
+    raise ValueError("请在 .env 中设置 LLM_API_KEY")
 
 # ============ LLM 初始化 ============
 llm = LLM(
@@ -33,7 +33,8 @@ llm = LLM(
 
 
 # ============ 工具初始化 ============
-claude_tool = ClaudeCodeTool(working_dir="/Users/wangjk/Documents/Codes/agent_system")
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+claude_tool = ClaudeCodeTool(working_dir=REPO_ROOT)
 
 
 # ============ Agent A: Manager (指挥官) ============
@@ -113,7 +114,7 @@ def run_crew_task(user_instruction: str):
     """运行 CrewAI 任务"""
 
     # 安全检查：确保不在 main 分支
-    ensure_branch("/Users/wangjk/Documents/Codes/agent_system")
+    ensure_branch(REPO_ROOT)
 
     # 任务 1：Manager 规划
     planning_task = Task(
@@ -179,7 +180,7 @@ if __name__ == "__main__":
         instruction = " ".join(sys.argv[1:])
     else:
         instruction = (
-            "检查 agent_system 仓库的 README.md，优化排版使其更符合 2026 年技术审美，"
+            "检查当前仓库的 README.md，优化排版使其更符合 2026 年技术审美，"
             "并增加一段关于本仓库由 CrewAI + Claude Code 协作维护的声明。"
         )
 
