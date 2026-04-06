@@ -17,8 +17,8 @@ from tools import ClaudeCodeTool
 load_dotenv()
 
 api_key = os.getenv("LLM_API_KEY", "")
-base_url = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
-model_name = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
+base_url = os.getenv("LLM_BASE_URL", "")
+model_name = os.getenv("LLM_MODEL", "")
 
 if not api_key:
     raise ValueError("请在 .env 中设置 LLM_API_KEY")
@@ -33,7 +33,7 @@ llm = LLM(
 
 
 # ============ 工具初始化 ============
-REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.getenv("REPO_ROOT", "")
 claude_tool = ClaudeCodeTool(working_dir=REPO_ROOT)
 
 

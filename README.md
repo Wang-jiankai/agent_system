@@ -79,13 +79,13 @@ touch .env
 编辑 `.env`，填入你的 LLM 配置：
 
 ```env
-# OpenAI 示例
-LLM_API_KEY=sk-xxx
-LLM_BASE_URL=https://api.openai.com/v1
-LLM_MODEL=gpt-4o-mini
-
-# SiliconFlow / MiniMax 等 OpenAI 兼容平台也支持
+LLM_API_KEY=your_api_key_here
+LLM_BASE_URL=https://api.minimaxi.com/v1
+LLM_MODEL=openai/MiniMax-M2.7
+REPO_ROOT=/path/to/your/repo
 ```
+
+支持的模型平台：OpenAI、SiliconFlow、Azure、AI Proxy 等所有 OpenAI 兼容接口。
 
 ### 3. 运行
 
