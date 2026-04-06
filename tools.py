@@ -2,7 +2,7 @@
 tools.py — 封装 Claude Code CLI 供 CrewAI Manager 调用
 
 Agent B (Executor) 的工具类，通过 subprocess 调用 Claude Code CLI，
-以 --yes 模式执行代码修改、文件操作及 Git 指令。
+使用 -p 非交互模式执行代码修改、文件操作及 Git 指令。
 """
 
 import subprocess
@@ -18,29 +18,35 @@ class ClaudeCodeTool(BaseTool):
 
     name: str = "claude_code_executor"
     description: str = (
-        "执行 Claude Code CLI 命令，以 --yes 模式自动执行代码修改、文件读写和 Git 操作。"
+        "通过 Claude Code CLI 执行文件操作、Git 命令和代码修改的非交互工具。"
+        "调用方式：claude -p '指令' --dangerously-skip-permissions --add-dir <工作目录>。"
         "接收完整的自然语言指令字符串，返回 CLI 的标准输出。"
-        "示例输入：'在 src/utils.py 中添加一个 hello() 函数，输出 Hello, Agent!'"
+        "重要：claude -p 会直接执行操作，需确保指令明确指向正确路径。"
+        "示例：'在 agent_system/README.md 末尾添加一行维护声明'"
     )
 
     working_dir: str = Field(
-        default="F:/Repository",
+        default="/Users/wangjk/Documents/Codes/agent_system",
         description="Claude Code 执行时的工作目录"
     )
 
     def _run(self, instruction: str) -> str:
         """内部执行逻辑"""
-        # 检测 claude 命令路径（Windows）
+        # 查找 claude 可执行文件路径
         claude_path = self._find_claude_path()
         if not claude_path:
             return "错误：未找到 claude 命令，请确保 Claude Code 已安装并配置到 PATH"
 
-        # 构造完整指令：--yes 模式 + 工作目录
+        # 构造完整指令：-p 非交互模式
+        # --dangerously-skip-permissions 跳过权限确认提示
+        # --add-dir 允许工具访问目录
         cmd = [
             claude_path,
-            "--yes",
-            "--no-input",
-            instruction
+            "-p",
+            instruction,
+            "--dangerously-skip-permissions",
+            "--add-dir",
+            self.working_dir
         ]
 
         try:
@@ -49,7 +55,6 @@ class ClaudeCodeTool(BaseTool):
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
-                cwd=self.working_dir,
                 timeout=300,
             )
             output = result.stdout if result.stdout else ""
@@ -79,7 +84,6 @@ class ClaudeCodeTool(BaseTool):
                     timeout=10
                 )
                 if result.returncode == 0:
-                    # 取第一行结果（完整路径）
                     paths = result.stdout.strip().split("\n")
                     if paths:
                         return paths[0].strip()
