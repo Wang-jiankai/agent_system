@@ -10,7 +10,6 @@ import subprocess
 import uuid
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, LLM
-from crewai_tools import WebSearchTool
 
 from tools import ClaudeCodeTool
 
@@ -37,7 +36,6 @@ llm = LLM(
 # ============ 工具初始化 ============
 REPO_ROOT = os.getenv("REPO_ROOT", "")
 claude_tool = ClaudeCodeTool(working_dir=REPO_ROOT)
-web_search = WebSearchTool()
 
 
 # ============ Agent A: Manager (指挥官) ============
@@ -46,13 +44,13 @@ manager = Agent(
     goal="将模糊指令拆解为精确的可执行任务序列，并审计 Executor 的执行结果",
     backstory=(
         "你是一个理性、数据驱动的系统架构师，擅长将复杂需求分解为清晰的执行步骤。"
-        "你善于利用 Worker 的 MCP 能力（WebSearch、WebFetch）进行深度调研，"
-        "确保每一步决策都有充分的事实依据。你对代码质量有极高要求，"
-        "在指派任务前会明确说明修改范围和预期结果。"
+        "你拥有 Claude Code CLI 工具（内置 WebSearch/WebFetch MCP 能力），"
+        "可通过 claude -p 执行搜索调研，确保每一步决策都有充分的事实依据。"
+        "你对代码质量有极高要求，在指派任务前会明确说明修改范围和预期结果。"
     ),
     verbose=True,
     allow_delegation=True,
-    tools=[web_search],
+    tools=[claude_tool],
     llm=llm,
 )
 
