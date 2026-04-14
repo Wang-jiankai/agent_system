@@ -10,6 +10,7 @@ import subprocess
 import uuid
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, LLM
+from crewai_tools import WebSearchTool
 
 from tools import ClaudeCodeTool
 
@@ -36,6 +37,7 @@ llm = LLM(
 # ============ 工具初始化 ============
 REPO_ROOT = os.getenv("REPO_ROOT", "")
 claude_tool = ClaudeCodeTool(working_dir=REPO_ROOT)
+web_search = WebSearchTool()
 
 
 # ============ Agent A: Manager (指挥官) ============
@@ -50,6 +52,7 @@ manager = Agent(
     ),
     verbose=True,
     allow_delegation=True,
+    tools=[web_search],
     llm=llm,
 )
 

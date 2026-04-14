@@ -1,4 +1,5 @@
-crewai>=0.80.0
+crewai>=1.14.1
+crewai-tools>=1.14.1
 langchain-openai>=0.3.0
 python-dotenv>=1.0.0
-litellm
+litellm>=1.0.0
